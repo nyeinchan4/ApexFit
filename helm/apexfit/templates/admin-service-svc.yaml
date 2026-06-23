@@ -1,0 +1,44 @@
+{{- if .Values.adminService.enabled }}
+{{- $svc := .Values.adminService }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-{{ $svc.name }}
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "apexfit.labels" . | nindent 4 }}
+    app.kubernetes.io/component: {{ $svc.name }}
+spec:
+  type: {{ $svc.service.type }}
+  selector:
+    {{- include "apexfit.selectorLabels" (dict "component" $svc.name "Release" .Release) | nindent 4 }}
+  ports:
+    - port: {{ $svc.port }}
+      targetPort: {{ $svc.port }}
+      protocol: TCP
+      name: http
+{{- end }}
+---
+{{- if and .Values.adminService.enabled .Values.adminService.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.adminService.name }}
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "apexfit.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Release.Name }}-{{ .Values.adminService.name }}
+  minReplicas: {{ .Values.adminService.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.adminService.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.adminService.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ApexFit - Plan Configurator</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-container": "#8690ee",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-container": "#00a6bc",
+                    "primary-container": "#1a237e",
+                    "inverse-surface": "#303031",
+                    "on-primary-fixed": "#000767",
+                    "surface-variant": "#e4e2e2",
+                    "on-secondary-container": "#182a8e",
+                    "inverse-primary": "#bdc2ff",
+                    "surface-container-highest": "#e4e2e2",
+                    "on-surface-variant": "#454652",
+                    "surface": "#fbf9f8",
+                    "primary-fixed": "#e0e0ff",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed": "#a1efff",
+                    "surface-bright": "#fbf9f8",
+                    "primary": "#000666",
+                    "on-surface": "#1b1c1c",
+                    "outline-variant": "#c6c5d4",
+                    "on-tertiary-fixed": "#001f25",
+                    "tertiary-container": "#00353d",
+                    "surface-dim": "#dbdad9",
+                    "surface-container-low": "#f5f3f3",
+                    "secondary": "#4555b7",
+                    "on-tertiary-fixed-variant": "#004e59",
+                    "on-secondary-fixed-variant": "#2c3c9e",
+                    "on-primary-fixed-variant": "#343d96",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "inverse-on-surface": "#f2f0f0",
+                    "on-background": "#1b1c1c",
+                    "error-container": "#ffdad6",
+                    "surface-container": "#efeded",
+                    "on-tertiary": "#ffffff",
+                    "tertiary": "#001e24",
+                    "surface-container-high": "#e9e8e7",
+                    "tertiary-fixed-dim": "#44d8f1",
+                    "secondary-fixed-dim": "#bbc3ff",
+                    "on-error-container": "#93000a",
+                    "outline": "#767683",
+                    "on-secondary-fixed": "#000e5e",
+                    "primary-fixed-dim": "#bdc2ff",
+                    "surface-tint": "#4c56af",
+                    "secondary-fixed": "#dee0ff",
+                    "background": "#fbf9f8",
+                    "secondary-container": "#8999ff",
+                    "on-error": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sm": "8px",
+                    "margin": "32px",
+                    "gutter": "24px",
+                    "container-max": "1440px",
+                    "md": "16px",
+                    "lg": "24px",
+                    "xl": "32px",
+                    "base": "8px",
+                    "xs": "4px"
+            },
+            "fontFamily": {
+                    "h3": ["Inter"],
+                    "h2": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "display": ["Inter"],
+                    "h1": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "tabular-nums": ["Inter"]
+            },
+            "fontSize": {
+                    "h3": ["16px", { "lineHeight": "24px", "fontWeight": "600" }],
+                    "h2": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                    "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                    "display": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                    "h1": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                    "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                    "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                    "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                    "tabular-nums": ["14px", { "lineHeight": "20px", "fontWeight": "500" }]
+            }
+          }
+        }
+      }
+    </script>
+</head>
+<body class="bg-background text-on-background antialiased font-['Inter']">
+<!-- SideNavBar (Shared Component) -->
+<nav class="fixed left-0 top-0 h-screen w-60 border-r border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-900 font-['Inter'] antialiased z-50 flex flex-col">
+<div class="p-6">
+<h1 class="text-xl font-black tracking-tighter text-[#1A237E] dark:text-blue-400">ApexFit<span class="block text-xs font-normal tracking-normal text-slate-500 mt-1">Admin Portal</span></h1>
+</div>
+<div class="flex flex-col gap-1 p-4 w-60 flex-grow">
+<!-- Dashboard (Inactive) -->
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 rounded-lg scale-100 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="dashboard">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<!-- Member Management (Inactive) -->
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 rounded-lg scale-100 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="group">group</span>
+<span class="font-body-md text-body-md">Member Management</span>
+</a>
+<!-- Cash Verification (Inactive) -->
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 rounded-lg scale-100 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="payments">payments</span>
+<span class="font-body-md text-body-md">Cash Verification</span>
+</a>
+<!-- Plan Configurator (Active) -->
+<a class="flex items-center gap-3 px-3 py-2 bg-[#E8EAF6] dark:bg-blue-900/30 text-[#1A237E] dark:text-blue-200 font-semibold rounded-lg transition-all duration-200 scale-100 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="settings_suggest" data-weight="fill" style="font-variation-settings: 'FILL' 1;">settings_suggest</span>
+<span class="font-body-md text-body-md font-semibold">Plan Configurator</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="ml-60 min-h-screen flex flex-col">
+<!-- TopNavBar (Shared Component) -->
+<header class="sticky top-0 z-40 w-full border-b border-b border-gray-200 dark:border-gray-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm font-['Inter'] text-sm font-medium">
+<div class="flex items-center justify-between px-6 py-3">
+<div class="flex items-center gap-4">
+<!-- Search Bar Placement -->
+<div class="relative focus-within:ring-2 focus-within:ring-[#1A237E]/20 rounded-lg">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+<input class="pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-sm w-64 focus:outline-none focus:ring-0 text-slate-700 dark:text-slate-200" placeholder="Search..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-slate-500 dark:text-slate-400 hover:text-[#1A237E] dark:hover:text-blue-300 transition-colors p-2 rounded-full hover:bg-slate-50 dark:hover:bg-slate-800">
+<span class="material-symbols-outlined text-[20px]" data-icon="notifications">notifications</span>
+</button>
+<button class="text-slate-500 dark:text-slate-400 hover:text-[#1A237E] dark:hover:text-blue-300 transition-colors p-2 rounded-full hover:bg-slate-50 dark:hover:bg-slate-800">
+<span class="material-symbols-outlined text-[20px]" data-icon="help_outline">help_outline</span>
+</button>
+<button class="text-slate-500 dark:text-slate-400 hover:text-[#1A237E] dark:hover:text-blue-300 transition-colors p-2 rounded-full hover:bg-slate-50 dark:hover:bg-slate-800">
+<span class="material-symbols-outlined text-[20px]" data-icon="settings">settings</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-slate-200 overflow-hidden ml-2 border border-gray-200">
+<img alt="Administrator Profile" class="h-full w-full object-cover" data-alt="professional headshot of an administrator with a neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsMSHEVDaPQOrUyUnT1zxiwomKmqQvDjWm5tyUyMYMYAmJ34j4ea6_c0t2aUvpT6LlLjkz91iJFNPZZEOaZVeQ1vPKpz9YJHB8_wnQRcFbphuOKKkDOYuioYdMv5XzhAfViHqELky-F1IpQituEC7ehoBdG9T4MOajzB2uyaF79cLxta-piaXriJ8K1p7ycXGMJ0JKZHTPFqqBIRMY_ssTwv_iTA0IeSaDhv00hIuE0oKPjOTF1v6X_pTjKx7coI-mGkbZCg0t2Uo"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<main class="flex-grow p-xl max-w-container-max mx-auto w-full">
+<!-- Page Header -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-xl">
+<div>
+<h2 class="font-display text-display text-on-surface">Plan Configurator</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-1">Manage and update membership plan offerings.</p>
+</div>
+<button class="flex items-center justify-center gap-2 bg-primary-container text-on-primary hover:bg-primary transition-colors h-[44px] px-lg rounded-lg font-label-md text-label-md shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    Add New Plan
+                </button>
+</div>
+<!-- Plans Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Basic Plan Card -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-lg p-lg flex flex-col h-full shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-md">
+<h3 class="font-h1 text-h1 text-on-surface">Basic</h3>
+<span class="bg-tertiary-fixed text-on-tertiary-fixed font-label-md text-label-md px-2 py-1 rounded-full uppercase">Active</span>
+</div>
+<div class="mb-lg">
+<div class="flex items-end gap-2">
+<span class="font-display text-display text-on-surface">45,000</span>
+<span class="font-body-lg text-body-lg text-on-surface-variant pb-1">MMK</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Billed monthly</p>
+</div>
+<div class="w-full h-px bg-surface-variant mb-lg"></div>
+<div class="flex-grow mb-xl">
+<ul class="flex flex-col gap-3">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface">Access to gym equipment</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface">Locker room access</span>
+</li>
+<li class="flex items-start gap-3 opacity-40">
+<span class="material-symbols-outlined text-outline text-[20px] mt-0.5">cancel</span>
+<span class="font-body-md text-body-md text-on-surface">Group fitness classes</span>
+</li>
+<li class="flex items-start gap-3 opacity-40">
+<span class="material-symbols-outlined text-outline text-[20px] mt-0.5">cancel</span>
+<span class="font-body-md text-body-md text-on-surface">Personal trainer sessions</span>
+</li>
+</ul>
+</div>
+<div class="flex items-center gap-3 mt-auto pt-md border-t border-surface-variant">
+<button class="flex-grow border border-surface-variant hover:bg-surface-container text-on-surface font-label-md text-label-md h-[36px] rounded-lg transition-colors flex items-center justify-center">
+                            Edit
+                        </button>
+<button class="w-[36px] h-[36px] flex items-center justify-center rounded-lg text-error hover:bg-error-container transition-colors border border-transparent hover:border-error-container">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Premium Plan Card -->
+<div class="bg-surface-container-lowest border border-primary-container/30 ring-1 ring-primary-container/10 rounded-lg p-lg flex flex-col h-full shadow-md relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-1 bg-primary-container"></div>
+<div class="flex justify-between items-start mb-md mt-1">
+<h3 class="font-h1 text-h1 text-on-surface">Premium</h3>
+<span class="bg-tertiary-fixed text-on-tertiary-fixed font-label-md text-label-md px-2 py-1 rounded-full uppercase">Active</span>
+</div>
+<div class="mb-lg">
+<div class="flex items-end gap-2">
+<span class="font-display text-display text-on-surface">85,000</span>
+<span class="font-body-lg text-body-lg text-on-surface-variant pb-1">MMK</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Billed monthly</p>
+</div>
+<div class="w-full h-px bg-surface-variant mb-lg"></div>
+<div class="flex-grow mb-xl">
+<ul class="flex flex-col gap-3">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface">Access to gym equipment</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface">Locker room &amp; Sauna access</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface">Unlimited group classes</span>
+</li>
+<li class="flex items-start gap-3 opacity-40">
+<span class="material-symbols-outlined text-outline text-[20px] mt-0.5">cancel</span>
+<span class="font-body-md text-body-md text-on-surface">Personal trainer sessions</span>
+</li>
+</ul>
+</div>
+<div class="flex items-center gap-3 mt-auto pt-md border-t border-surface-variant">
+<button class="flex-grow border border-surface-variant hover:bg-surface-container text-on-surface font-label-md text-label-md h-[36px] rounded-lg transition-colors flex items-center justify-center">
+                            Edit
+                        </button>
+<button class="w-[36px] h-[36px] flex items-center justify-center rounded-lg text-error hover:bg-error-container transition-colors border border-transparent hover:border-error-container">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Elite Plan Card -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-lg p-lg flex flex-col h-full shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-md">
+<h3 class="font-h1 text-h1 text-on-surface">Elite</h3>
+<span class="bg-tertiary-fixed text-on-tertiary-fixed font-label-md text-label-md px-2 py-1 rounded-full uppercase">Active</span>
+</div>
+<div class="mb-lg">
+<div class="flex items-end gap-2">
+<span class="font-display text-display text-on-surface">150,000</span>
+<span class="font-body-lg text-body-lg text-on-surface-variant pb-1">MMK</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Billed monthly</p>
+</div>
+<div class="w-full h-px bg-surface-variant mb-lg"></div>
+<div class="flex-grow mb-xl">
+<ul class="flex flex-col gap-3">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface">All Premium benefits</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface">4 Personal training sessions</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface">Free guest pass (2/month)</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface">Priority support</span>
+</li>
+</ul>
+</div>
+<div class="flex items-center gap-3 mt-auto pt-md border-t border-surface-variant">
+<button class="flex-grow border border-surface-variant hover:bg-surface-container text-on-surface font-label-md text-label-md h-[36px] rounded-lg transition-colors flex items-center justify-center">
+                            Edit
+                        </button>
+<button class="w-[36px] h-[36px] flex items-center justify-center rounded-lg text-error hover:bg-error-container transition-colors border border-transparent hover:border-error-container">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

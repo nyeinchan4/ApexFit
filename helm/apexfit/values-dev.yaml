@@ -1,0 +1,62 @@
+# ============================================================
+# ApexFit — values-dev.yaml
+# Lightweight overrides for local/development environments
+# Usage:
+#   helm install apexfit ./helm/apexfit -f helm/apexfit/values-dev.yaml
+# ============================================================
+
+global:
+  nodeEnv: development
+
+image:
+  pullPolicy: Never     # use locally built images, no registry pull
+
+# Reduce replica counts for dev
+userService:
+  replicaCount: 1
+  env:
+    NODE_ENV: development
+
+membershipService:
+  replicaCount: 1
+  env:
+    NODE_ENV: development
+
+adminService:
+  replicaCount: 1
+  env:
+    NODE_ENV: development
+
+apiGateway:
+  replicaCount: 1
+  env:
+    NODE_ENV: development
+    ALLOWED_ORIGINS: "http://localhost:8899,http://localhost:8900,http://localhost:3000"
+
+adminPortal:
+  replicaCount: 1
+
+memberApp:
+  replicaCount: 1
+
+# Lightweight postgres for dev
+postgresql:
+  primary:
+    persistence:
+      size: 1Gi
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "250m"
+
+# Disable ingress in dev; use kubectl port-forward instead
+ingress:
+  enabled: false
+
+# Non-sensitive dev secrets (fine for local use only)
+secrets:
+  jwtAccessSecret: "dev_access_secret_not_for_production"
+  jwtRefreshSecret: "dev_refresh_secret_not_for_production"

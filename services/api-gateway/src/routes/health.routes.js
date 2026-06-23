@@ -1,0 +1,41 @@
+'use strict';
+const express = require('express');
+const axios   = require('axios');
+
+const router = express.Router();
+
+const ping = async (url, name) => {
+  try {
+    const { data } = await axios.get(`${url}/health`, { timeout: 3000 });
+    return { name, status: data.db === 'ok' ? 'ok' : 'degraded', uptime: data.uptime };
+  } catch {
+    return { name, status: 'unreachable' };
+  }
+};
+
+/**
+ * GET /health
+ * Aggregates health from all three downstream services.
+ * Used for Kubernetes liveness and readiness probes.
+ */
+router.get('/', async (req, res) => {
+  const [userSvc, membershipSvc, adminSvc] = await Promise.all([
+    ping(process.env.USER_SERVICE_URL       || 'http://localhost:3001', 'user-service'),
+    ping(process.env.MEMBERSHIP_SERVICE_URL || 'http://localhost:3002', 'membership-service'),
+    ping(process.env.ADMIN_SERVICE_URL      || 'http://localhost:3003', 'admin-service'),
+  ]);
+
+  const services = [userSvc, membershipSvc, adminSvc];
+  const allHealthy = services.every(s => s.status === 'ok');
+
+  return res.status(allHealthy ? 200 : 503).json({
+    success: allHealthy,
+    gateway: 'api-gateway',
+    version: '1.0.0',
+    uptime:  process.uptime(),
+    services: { userSvc, membershipSvc, adminSvc },
+    timestamp: new Date().toISOString(),
+  });
+});
+
+module.exports = router;

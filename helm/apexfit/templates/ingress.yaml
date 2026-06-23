@@ -1,0 +1,58 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-ingress
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "apexfit.labels" . | nindent 4 }}
+  annotations:
+    {{- toYaml .Values.ingress.annotations | nindent 4 }}
+    {{- if and .Values.ingress.tls.enabled .Values.ingress.tls.certManager.enabled }}
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.certManager.clusterIssuer }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.hosts.api }}
+        - {{ .Values.ingress.hosts.admin }}
+        - {{ .Values.ingress.hosts.app }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    # ── API Gateway ──────────────────────────────────────
+    - host: {{ .Values.ingress.hosts.api }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-{{ .Values.apiGateway.name }}
+                port:
+                  number: {{ .Values.apiGateway.port }}
+    # ── Admin Portal ─────────────────────────────────────
+    - host: {{ .Values.ingress.hosts.admin }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-{{ .Values.adminPortal.name }}
+                port:
+                  number: {{ .Values.adminPortal.port }}
+    # ── Member App ───────────────────────────────────────
+    - host: {{ .Values.ingress.hosts.app }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-{{ .Values.memberApp.name }}
+                port:
+                  number: {{ .Values.memberApp.port }}
+{{- end }}

@@ -1,0 +1,68 @@
+{{- if .Values.adminPortal.enabled }}
+{{- $svc := .Values.adminPortal }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-{{ $svc.name }}
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "apexfit.labels" . | nindent 4 }}
+    app.kubernetes.io/component: {{ $svc.name }}
+spec:
+  replicas: {{ $svc.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "apexfit.selectorLabels" (dict "component" $svc.name "Release" .Release) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "apexfit.selectorLabels" (dict "component" $svc.name "Release" .Release) | nindent 8 }}
+        app.kubernetes.io/component: {{ $svc.name }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ $svc.name }}
+          image: {{ include "apexfit.image" (dict "svc" $svc "Values" .Values) }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ $svc.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: {{ $svc.livenessProbe.path }}
+              port: {{ $svc.port }}
+            initialDelaySeconds: {{ $svc.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ $svc.livenessProbe.periodSeconds }}
+          readinessProbe:
+            httpGet:
+              path: {{ $svc.readinessProbe.path }}
+              port: {{ $svc.port }}
+            initialDelaySeconds: {{ $svc.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ $svc.readinessProbe.periodSeconds }}
+          resources:
+            {{- toYaml $svc.resources | nindent 12 }}
+{{- end }}
+---
+{{- if .Values.adminPortal.enabled }}
+{{- $svc := .Values.adminPortal }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-{{ $svc.name }}
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "apexfit.labels" . | nindent 4 }}
+    app.kubernetes.io/component: {{ $svc.name }}
+spec:
+  type: {{ $svc.service.type }}
+  selector:
+    {{- include "apexfit.selectorLabels" (dict "component" $svc.name "Release" .Release) | nindent 4 }}
+  ports:
+    - port: {{ $svc.port }}
+      targetPort: {{ $svc.port }}
+      protocol: TCP
+      name: http
+{{- end }}

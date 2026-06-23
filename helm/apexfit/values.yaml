@@ -1,0 +1,285 @@
+# ============================================================
+# ApexFit — Helm Chart Values
+# ============================================================
+# Override any value with:
+#   helm install apexfit ./helm/apexfit -f my-values.yaml
+# ============================================================
+
+# ─── Global settings ──────────────────────────────────────
+global:
+  imageRegistry: ""          # e.g. "ghcr.io/myorg" — prefix for all images
+  imagePullSecrets: []       # list of pull-secret names
+  nodeEnv: production
+
+# ─── Namespace ────────────────────────────────────────────
+namespace:
+  create: true
+  name: apexfit
+
+# ─── Image defaults (can be overridden per-service) ───────
+image:
+  pullPolicy: IfNotPresent
+  tag: latest
+
+# ─── PostgreSQL (Bitnami sub-chart) ───────────────────────
+postgresql:
+  enabled: true
+  auth:
+    username: postgres
+    password: "changeme"      # CHANGE in production
+    database: apexfit_users   # primary DB; others created via initdb
+  primary:
+    initdb:
+      scripts:
+        init-db.sql: |
+          SELECT 'CREATE DATABASE apexfit_memberships'
+          WHERE NOT EXISTS (
+              SELECT FROM pg_database WHERE datname = 'apexfit_memberships'
+          )\gexec
+
+          SELECT 'CREATE DATABASE apexfit_admin'
+          WHERE NOT EXISTS (
+              SELECT FROM pg_database WHERE datname = 'apexfit_admin'
+          )\gexec
+    persistence:
+      enabled: true
+      size: 8Gi
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+# ─── Shared JWT secrets ───────────────────────────────────
+# These are stored in a single Kubernetes Secret and mounted
+# as environment variables into every service that needs them.
+secrets:
+  jwtAccessSecret: "CHANGE_ME_access_secret"
+  jwtRefreshSecret: "CHANGE_ME_refresh_secret"
+
+# ─── Service: user-service ────────────────────────────────
+userService:
+  enabled: true
+  name: user-service
+  image:
+    repository: apexfit/user-service
+    tag: ""                   # falls back to .Values.image.tag
+  replicaCount: 2
+  port: 3001
+  env:
+    NODE_ENV: "production"
+    PORT: "3001"
+    DB_NAME: apexfit_users
+    SERVICE_NAME: user-service
+    JWT_ACCESS_EXPIRES_IN: "15m"
+    JWT_REFRESH_EXPIRES_IN: "30d"
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "250m"
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+  service:
+    type: ClusterIP
+  livenessProbe:
+    path: /health
+    initialDelaySeconds: 15
+    periodSeconds: 20
+  readinessProbe:
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 10
+
+# ─── Service: membership-service ─────────────────────────
+membershipService:
+  enabled: true
+  name: membership-service
+  image:
+    repository: apexfit/membership-service
+    tag: ""
+  replicaCount: 2
+  port: 3002
+  env:
+    NODE_ENV: "production"
+    PORT: "3002"
+    DB_NAME: apexfit_memberships
+    SERVICE_NAME: membership-service
+    JWT_ACCESS_EXPIRES_IN: "15m"
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "250m"
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+  service:
+    type: ClusterIP
+  livenessProbe:
+    path: /health
+    initialDelaySeconds: 15
+    periodSeconds: 20
+  readinessProbe:
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 10
+
+# ─── Service: admin-service ───────────────────────────────
+adminService:
+  enabled: true
+  name: admin-service
+  image:
+    repository: apexfit/admin-service
+    tag: ""
+  replicaCount: 1
+  port: 3003
+  env:
+    NODE_ENV: "production"
+    PORT: "3003"
+    DB_NAME: apexfit_admin
+    SERVICE_NAME: admin-service
+    JWT_ACCESS_EXPIRES_IN: "15m"
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "250m"
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+  service:
+    type: ClusterIP
+  livenessProbe:
+    path: /health
+    initialDelaySeconds: 15
+    periodSeconds: 20
+  readinessProbe:
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 10
+
+# ─── Service: api-gateway ────────────────────────────────
+apiGateway:
+  enabled: true
+  name: api-gateway
+  image:
+    repository: apexfit/api-gateway
+    tag: ""
+  replicaCount: 2
+  port: 3000
+  env:
+    NODE_ENV: "production"
+    PORT: "3000"
+    SERVICE_NAME: api-gateway
+    ALLOWED_ORIGINS: "https://admin.apexfit.example.com,https://app.apexfit.example.com"
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "250m"
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 60
+  service:
+    type: ClusterIP
+  livenessProbe:
+    path: /health
+    initialDelaySeconds: 15
+    periodSeconds: 20
+  readinessProbe:
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 10
+
+# ─── Frontend: admin-portal ───────────────────────────────
+adminPortal:
+  enabled: true
+  name: admin-portal
+  image:
+    repository: apexfit/admin-portal
+    tag: ""
+  replicaCount: 1
+  port: 80
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "100m"
+  service:
+    type: ClusterIP
+  livenessProbe:
+    path: /
+    initialDelaySeconds: 10
+    periodSeconds: 20
+  readinessProbe:
+    path: /
+    initialDelaySeconds: 5
+    periodSeconds: 10
+
+# ─── Frontend: member-app ─────────────────────────────────
+memberApp:
+  enabled: true
+  name: member-app
+  image:
+    repository: apexfit/member-app
+    tag: ""
+  replicaCount: 1
+  port: 80
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "100m"
+  service:
+    type: ClusterIP
+  livenessProbe:
+    path: /
+    initialDelaySeconds: 10
+    periodSeconds: 20
+  readinessProbe:
+    path: /
+    initialDelaySeconds: 5
+    periodSeconds: 10
+
+# ─── Ingress ─────────────────────────────────────────────
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+  # Set tls.enabled = true and supply a cert-manager clusterIssuer for HTTPS
+  tls:
+    enabled: false
+    secretName: apexfit-tls
+    certManager:
+      enabled: false
+      clusterIssuer: letsencrypt-prod
+  hosts:
+    api: api.apexfit.example.com
+    admin: admin.apexfit.example.com
+    app: app.apexfit.example.com

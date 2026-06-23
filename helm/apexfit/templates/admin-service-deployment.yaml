@@ -1,0 +1,79 @@
+{{- if .Values.adminService.enabled }}
+{{- $svc := .Values.adminService }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-{{ $svc.name }}
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "apexfit.labels" . | nindent 4 }}
+    app.kubernetes.io/component: {{ $svc.name }}
+spec:
+  replicas: {{ $svc.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "apexfit.selectorLabels" (dict "component" $svc.name "Release" .Release) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "apexfit.selectorLabels" (dict "component" $svc.name "Release" .Release) | nindent 8 }}
+        app.kubernetes.io/component: {{ $svc.name }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ $svc.name }}
+          image: {{ include "apexfit.image" (dict "svc" $svc "Values" .Values) }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ $svc.port }}
+              protocol: TCP
+          env:
+            {{- range $k, $v := $svc.env }}
+            - name: {{ $k }}
+              value: {{ $v | quote }}
+            {{- end }}
+            - name: DB_HOST
+              value: {{ include "apexfit.postgresHost" . | quote }}
+            - name: DB_PORT
+              value: {{ include "apexfit.postgresPort" . | quote }}
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secrets
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secrets
+                  key: DB_PASSWORD
+            - name: JWT_ACCESS_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secrets
+                  key: JWT_ACCESS_SECRET
+            # ── Inter-service URLs ────────────────────────────
+            - name: USER_SERVICE_URL
+              value: http://{{ .Release.Name }}-{{ .Values.userService.name }}:{{ .Values.userService.port }}
+            - name: MEMBERSHIP_SERVICE_URL
+              value: http://{{ .Release.Name }}-{{ .Values.membershipService.name }}:{{ .Values.membershipService.port }}
+          livenessProbe:
+            httpGet:
+              path: {{ $svc.livenessProbe.path }}
+              port: {{ $svc.port }}
+            initialDelaySeconds: {{ $svc.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ $svc.livenessProbe.periodSeconds }}
+          readinessProbe:
+            httpGet:
+              path: {{ $svc.readinessProbe.path }}
+              port: {{ $svc.port }}
+            initialDelaySeconds: {{ $svc.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ $svc.readinessProbe.periodSeconds }}
+          resources:
+            {{- toYaml $svc.resources | nindent 12 }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+{{- end }}

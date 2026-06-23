@@ -1,0 +1,148 @@
+version: "3.9"
+
+services:
+  # ─────────────────────────────────────────────
+  # Shared PostgreSQL instance (3 databases)
+  # ─────────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: apexfit-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: apexfit_users   # default DB; others created by init script
+    ports:
+      - "55432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────────
+  # User Service  (port 3001)
+  # ─────────────────────────────────────────────
+  user-service:
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    container_name: apexfit-user-service
+    restart: unless-stopped
+    env_file: ./services/user-service/.env.example
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: apexfit_users
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      NODE_ENV: development
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ─────────────────────────────────────────────
+  # Membership Service  (port 3002)
+  # ─────────────────────────────────────────────
+  membership-service:
+    build:
+      context: ./services/membership-service
+      dockerfile: Dockerfile
+    container_name: apexfit-membership-service
+    restart: unless-stopped
+    env_file: ./services/membership-service/.env.example
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: apexfit_memberships
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      NODE_ENV: development
+    ports:
+      - "3002:3002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ─────────────────────────────────────────────
+  # Admin Service  (port 3003)
+  # ─────────────────────────────────────────────
+  admin-service:
+    build:
+      context: ./services/admin-service
+      dockerfile: Dockerfile
+    container_name: apexfit-admin-service
+    restart: unless-stopped
+    env_file: ./services/admin-service/.env.example
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: apexfit_admin
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      USER_SERVICE_URL: http://user-service:3001
+      MEMBERSHIP_SERVICE_URL: http://membership-service:3002
+      NODE_ENV: development
+    ports:
+      - "3003:3003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ─────────────────────────────────────────────
+  # API Gateway  (port 3000)
+  # ─────────────────────────────────────────────
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    container_name: apexfit-api-gateway
+    restart: unless-stopped
+    env_file: ./services/api-gateway/.env.example
+    environment:
+      USER_SERVICE_URL: http://user-service:3001
+      MEMBERSHIP_SERVICE_URL: http://membership-service:3002
+      ADMIN_SERVICE_URL: http://admin-service:3003
+      NODE_ENV: development
+    ports:
+      - "3000:3000"
+    depends_on:
+      - user-service
+      - membership-service
+      - admin-service
+
+  # ─────────────────────────────────────────────
+  # Admin Portal — React SPA  (port 8899)
+  # ─────────────────────────────────────────────
+  admin-portal:
+    build:
+      context: ./frontend/admin-portal
+      dockerfile: Dockerfile
+    container_name: apexfit-admin-portal
+    restart: unless-stopped
+    ports:
+      - "8899:80"
+    depends_on:
+      - api-gateway
+
+  # ─────────────────────────────────────────────
+  # Member App — React SPA  (port 8900)
+  # ─────────────────────────────────────────────
+  member-app:
+    build:
+      context: ./frontend/member-app
+      dockerfile: Dockerfile
+    container_name: apexfit-member-app
+    restart: unless-stopped
+    ports:
+      - "8900:80"
+    depends_on:
+      - api-gateway
+
+volumes:
+  postgres_data:

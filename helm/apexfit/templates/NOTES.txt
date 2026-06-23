@@ -1,0 +1,60 @@
+╔══════════════════════════════════════════════════════════╗
+║              🏋️  ApexFit deployed successfully!           ║
+╚══════════════════════════════════════════════════════════╝
+
+Release : {{ .Release.Name }}
+Chart   : {{ .Chart.Name }}-{{ .Chart.Version }}
+Namespace: {{ .Values.namespace.name }}
+
+─────────────────────────────────────────────────────────────
+SERVICES
+─────────────────────────────────────────────────────────────
+{{- if .Values.userService.enabled }}
+  • user-service      → ClusterIP  port {{ .Values.userService.port }}
+{{- end }}
+{{- if .Values.membershipService.enabled }}
+  • membership-service → ClusterIP  port {{ .Values.membershipService.port }}
+{{- end }}
+{{- if .Values.adminService.enabled }}
+  • admin-service     → ClusterIP  port {{ .Values.adminService.port }}
+{{- end }}
+{{- if .Values.apiGateway.enabled }}
+  • api-gateway       → ClusterIP  port {{ .Values.apiGateway.port }}
+{{- end }}
+{{- if .Values.adminPortal.enabled }}
+  • admin-portal      → ClusterIP  port {{ .Values.adminPortal.port }}
+{{- end }}
+{{- if .Values.memberApp.enabled }}
+  • member-app        → ClusterIP  port {{ .Values.memberApp.port }}
+{{- end }}
+
+─────────────────────────────────────────────────────────────
+INGRESS HOSTS (configure DNS to point to your Ingress LB)
+─────────────────────────────────────────────────────────────
+{{- if .Values.ingress.enabled }}
+  API Gateway  : http{{ if .Values.ingress.tls.enabled }}s{{ end }}://{{ .Values.ingress.hosts.api }}
+  Admin Portal : http{{ if .Values.ingress.tls.enabled }}s{{ end }}://{{ .Values.ingress.hosts.admin }}
+  Member App   : http{{ if .Values.ingress.tls.enabled }}s{{ end }}://{{ .Values.ingress.hosts.app }}
+{{- else }}
+  Ingress is disabled. Enable with --set ingress.enabled=true
+{{- end }}
+
+─────────────────────────────────────────────────────────────
+QUICK ACCESS (port-forward to test locally)
+─────────────────────────────────────────────────────────────
+  kubectl port-forward -n {{ .Values.namespace.name }} \
+    svc/{{ .Release.Name }}-api-gateway 3000:{{ .Values.apiGateway.port }}
+
+  kubectl port-forward -n {{ .Values.namespace.name }} \
+    svc/{{ .Release.Name }}-admin-portal 8899:{{ .Values.adminPortal.port }}
+
+  kubectl port-forward -n {{ .Values.namespace.name }} \
+    svc/{{ .Release.Name }}-member-app 8900:{{ .Values.memberApp.port }}
+
+─────────────────────────────────────────────────────────────
+⚠  IMPORTANT: Change default secrets before going to production!
+   helm upgrade {{ .Release.Name }} ./helm/apexfit \
+     --set secrets.jwtAccessSecret=<secure-random> \
+     --set secrets.jwtRefreshSecret=<secure-random> \
+     --set postgresql.auth.password=<secure-password>
+─────────────────────────────────────────────────────────────
