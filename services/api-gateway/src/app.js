@@ -48,15 +48,20 @@ app.use(express.json({ limit: '10kb' }));
 app.use('/health', require('./routes/health.routes'));
 
 // ── Dynamically register proxy routes from routing table ──────────────────────
+const isDev = (process.env.NODE_ENV || 'development') === 'development';
+
 routes.forEach((route) => {
   const middlewareChain = [];
 
-  // Per-route rate limiter
-  middlewareChain.push(rateLimit({
-    windowMs: route.rateLimit.windowMs,
-    max:      route.rateLimit.max,
-    message:  { success: false, error: 'Too many requests, please try again later.' },
-  }));
+  // Per-route rate limiter — disabled in development (port-forward funnels all
+  // traffic through 127.0.0.1, which exhausts a shared bucket instantly).
+  if (!isDev) {
+    middlewareChain.push(rateLimit({
+      windowMs: route.rateLimit.windowMs,
+      max:      route.rateLimit.max,
+      message:  { success: false, error: 'Too many requests, please try again later.' },
+    }));
+  }
 
   // JWT authentication (skip for public routes)
   if (!route.public) {

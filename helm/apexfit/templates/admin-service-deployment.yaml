@@ -65,12 +65,16 @@ spec:
               port: {{ $svc.port }}
             initialDelaySeconds: {{ $svc.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ $svc.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ $svc.livenessProbe.timeoutSeconds | default 15 }}
+            failureThreshold: {{ $svc.livenessProbe.failureThreshold | default 5 }}
           readinessProbe:
             httpGet:
               path: {{ $svc.readinessProbe.path }}
               port: {{ $svc.port }}
             initialDelaySeconds: {{ $svc.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ $svc.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ $svc.readinessProbe.timeoutSeconds | default 15 }}
+            failureThreshold: {{ $svc.readinessProbe.failureThreshold | default 5 }}
           resources:
             {{- toYaml $svc.resources | nindent 12 }}
       securityContext:
