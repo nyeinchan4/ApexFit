@@ -7,8 +7,8 @@
 #
 # NOTE: The database sub-chart must be installed first so the
 #       shared Secret already exists in the namespace.
-#       Default secret name: apexfit-db-secrets
-#       (= <database-release-name>-secrets)
+#       Default secret name: apexfit-database-secrets
+#       (= <database-release-name>-secrets = apexfit-database-secrets)
 # ============================================================
 
 # ─── Namespace ────────────────────────────────────────────
@@ -26,12 +26,12 @@ image:
 
 # ─── Shared Secret (created by apexfit-database release) ──
 # Format: <database-release-name>-secrets
-sharedSecretName: "apexfit-db-secrets"
+sharedSecretName: "apexfit-database-secrets"
 
 # ─── Database host (matches database release name) ─────────
 # Format: <database-release-name>-postgresql
 database:
-  host: "apexfit-db-postgresql"
+  host: "apexfit-database-postgresql"
   port: "5432"
 
 # ─── Service: api-gateway ─────────────────────────────────
