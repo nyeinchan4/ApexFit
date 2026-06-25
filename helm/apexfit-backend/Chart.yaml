@@ -1,0 +1,15 @@
+apiVersion: v2
+name: apexfit-backend
+description: |
+  ApexFit Backend sub-chart.
+  Manages: api-gateway, user-service, membership-service, admin-service.
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - apexfit
+  - backend
+  - microservices
+  - nodejs
+maintainers:
+  - name: ApexFit Team

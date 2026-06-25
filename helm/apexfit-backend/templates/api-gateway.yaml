@@ -6,17 +6,17 @@ metadata:
   name: {{ .Release.Name }}-{{ $svc.name }}
   namespace: {{ .Values.namespace.name }}
   labels:
-    {{- include "apexfit.labels" . | nindent 4 }}
+    {{- include "apexfit-backend.labels" . | nindent 4 }}
     app.kubernetes.io/component: {{ $svc.name }}
 spec:
   replicas: {{ $svc.replicaCount }}
   selector:
     matchLabels:
-      {{- include "apexfit.selectorLabels" (dict "component" $svc.name "Release" .Release) | nindent 6 }}
+      {{- include "apexfit-backend.selectorLabels" (dict "component" $svc.name "Release" .Release) | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "apexfit.selectorLabels" (dict "component" $svc.name "Release" .Release) | nindent 8 }}
+        {{- include "apexfit-backend.selectorLabels" (dict "component" $svc.name "Release" .Release) | nindent 8 }}
         app.kubernetes.io/component: {{ $svc.name }}
     spec:
       {{- with .Values.global.imagePullSecrets }}
@@ -25,12 +25,13 @@ spec:
       {{- end }}
       containers:
         - name: {{ $svc.name }}
-          image: {{ include "apexfit.image" (dict "svc" $svc "Values" .Values) }}
+          image: {{ include "apexfit-backend.image" (dict "svc" $svc "Values" .Values) }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ $svc.port }}
               protocol: TCP
           env:
+            # ── Non-secret env vars ──────────────────────────
             {{- range $k, $v := $svc.env }}
             - name: {{ $k }}
               value: {{ $v | quote }}
@@ -39,7 +40,7 @@ spec:
             - name: JWT_ACCESS_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-secrets
+                  name: {{ .Values.sharedSecretName }}
                   key: JWT_ACCESS_SECRET
             # ── Downstream service URLs ───────────────────────
             - name: USER_SERVICE_URL
@@ -69,4 +70,25 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
+{{- end }}
+---
+{{- if .Values.apiGateway.enabled }}
+{{- $svc := .Values.apiGateway }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-{{ $svc.name }}
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "apexfit-backend.labels" . | nindent 4 }}
+    app.kubernetes.io/component: {{ $svc.name }}
+spec:
+  type: {{ $svc.service.type }}
+  selector:
+    {{- include "apexfit-backend.selectorLabels" (dict "component" $svc.name "Release" .Release) | nindent 4 }}
+  ports:
+    - port: {{ $svc.port }}
+      targetPort: {{ $svc.port }}
+      protocol: TCP
+      name: http
 {{- end }}

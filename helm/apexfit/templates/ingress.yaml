@@ -5,7 +5,9 @@ metadata:
   name: {{ .Release.Name }}-ingress
   namespace: {{ .Values.namespace.name }}
   labels:
-    {{- include "apexfit.labels" . | nindent 4 }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
   annotations:
     {{- toYaml .Values.ingress.annotations | nindent 4 }}
     {{- if and .Values.ingress.tls.enabled .Values.ingress.tls.certManager.enabled }}
@@ -30,9 +32,9 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ .Release.Name }}-{{ .Values.apiGateway.name }}
+                name: {{ .Release.Name }}-backend-{{ .Values.ingress.services.apiGatewayName }}
                 port:
-                  number: {{ .Values.apiGateway.port }}
+                  number: {{ .Values.ingress.services.apiGatewayPort }}
     # ── Admin Portal ─────────────────────────────────────
     - host: {{ .Values.ingress.hosts.admin }}
       http:
@@ -41,9 +43,9 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ .Release.Name }}-{{ .Values.adminPortal.name }}
+                name: {{ .Release.Name }}-frontend-{{ .Values.ingress.services.adminPortalName }}
                 port:
-                  number: {{ .Values.adminPortal.port }}
+                  number: {{ .Values.ingress.services.adminPortalPort }}
     # ── Member App ───────────────────────────────────────
     - host: {{ .Values.ingress.hosts.app }}
       http:
@@ -52,7 +54,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ .Release.Name }}-{{ .Values.memberApp.name }}
+                name: {{ .Release.Name }}-frontend-{{ .Values.ingress.services.memberAppName }}
                 port:
-                  number: {{ .Values.memberApp.port }}
+                  number: {{ .Values.ingress.services.memberAppPort }}
 {{- end }}

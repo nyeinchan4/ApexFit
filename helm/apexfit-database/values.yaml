@@ -1,0 +1,48 @@
+# ============================================================
+# apexfit-database — values.yaml
+# ============================================================
+
+# ─── Namespace (must match umbrella chart) ────────────────
+namespace:
+  name: apexfit
+
+# ─── Shared credentials (stored in a K8s Secret) ──────────
+secrets:
+  jwtAccessSecret: "CHANGE_ME_access_secret"
+  jwtRefreshSecret: "CHANGE_ME_refresh_secret"
+
+# ─── PostgreSQL (Bitnami sub-chart) ───────────────────────
+postgresql:
+  enabled: true
+  auth:
+    username: postgres
+    password: "changeme"        # CHANGE in production
+    database: apexfit_users     # primary DB; others created via initdb
+  primary:
+    initdb:
+      scripts:
+        init-db.sql: |
+          SELECT 'CREATE DATABASE apexfit_memberships'
+          WHERE NOT EXISTS (
+              SELECT FROM pg_database WHERE datname = 'apexfit_memberships'
+          )\gexec
+
+          SELECT 'CREATE DATABASE apexfit_admin'
+          WHERE NOT EXISTS (
+              SELECT FROM pg_database WHERE datname = 'apexfit_admin'
+          )\gexec
+    persistence:
+      enabled: true
+      size: 8Gi
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+# ─── External PostgreSQL (used when postgresql.enabled=false) ─
+externalPostgresql:
+  host: ""
+  port: 5432

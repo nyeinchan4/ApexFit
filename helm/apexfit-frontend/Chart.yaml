@@ -1,0 +1,15 @@
+apiVersion: v2
+name: apexfit-frontend
+description: |
+  ApexFit Frontend sub-chart.
+  Manages: admin-portal and member-app (Nginx-served React SPAs).
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - apexfit
+  - frontend
+  - react
+  - nginx
+maintainers:
+  - name: ApexFit Team

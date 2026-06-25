@@ -1,0 +1,74 @@
+# ============================================================
+# apexfit-frontend — values.yaml
+# ============================================================
+
+# ─── Namespace (must match umbrella chart) ────────────────
+namespace:
+  name: apexfit
+
+# ─── Global image defaults ────────────────────────────────
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+
+image:
+  pullPolicy: IfNotPresent
+  tag: latest
+
+# ─── Frontend: admin-portal ───────────────────────────────
+adminPortal:
+  enabled: true
+  name: admin-portal
+  image:
+    repository: apexfit/admin-portal
+    tag: ""
+  replicaCount: 1
+  port: 80
+  env:
+    API_GATEWAY_HOST: ""    # e.g. release-name-api-gateway
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "100m"
+  service:
+    type: ClusterIP
+  livenessProbe:
+    path: /
+    initialDelaySeconds: 10
+    periodSeconds: 20
+  readinessProbe:
+    path: /
+    initialDelaySeconds: 5
+    periodSeconds: 10
+
+# ─── Frontend: member-app ─────────────────────────────────
+memberApp:
+  enabled: true
+  name: member-app
+  image:
+    repository: apexfit/member-app
+    tag: ""
+  replicaCount: 1
+  port: 80
+  env:
+    API_GATEWAY_HOST: ""    # e.g. release-name-api-gateway
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "100m"
+  service:
+    type: ClusterIP
+  livenessProbe:
+    path: /
+    initialDelaySeconds: 10
+    periodSeconds: 20
+  readinessProbe:
+    path: /
+    initialDelaySeconds: 5
+    periodSeconds: 10

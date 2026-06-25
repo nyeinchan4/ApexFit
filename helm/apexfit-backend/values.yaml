@@ -1,0 +1,194 @@
+# ============================================================
+# apexfit-backend — values.yaml
+# ============================================================
+
+# ─── Namespace (must match umbrella chart) ────────────────
+namespace:
+  name: apexfit
+
+# ─── Global image defaults ────────────────────────────────
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+
+image:
+  pullPolicy: IfNotPresent
+  tag: latest
+
+# ─── Shared Secret name (created by apexfit-database) ─────
+# All backend services read JWT/DB creds from this secret.
+sharedSecretName: "apexfit-secrets"   # set to <db-release-name>-secrets
+
+# ─── Database connection info ─────────────────────────────
+# Set to match apexfit-database release name / external host.
+database:
+  host: "apexfit-postgresql"    # e.g. <db-release-name>-postgresql
+  port: "5432"
+
+# ─── Service: api-gateway ────────────────────────────────
+apiGateway:
+  enabled: true
+  name: api-gateway
+  image:
+    repository: apexfit/api-gateway
+    tag: ""
+  replicaCount: 2
+  port: 3000
+  env:
+    NODE_ENV: "production"
+    PORT: "3000"
+    SERVICE_NAME: api-gateway
+    ALLOWED_ORIGINS: "https://admin.apexfit.example.com,https://app.apexfit.example.com"
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "250m"
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 60
+  service:
+    type: ClusterIP
+  livenessProbe:
+    path: /health
+    initialDelaySeconds: 15
+    periodSeconds: 20
+    timeoutSeconds: 15
+    failureThreshold: 5
+  readinessProbe:
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 15
+    failureThreshold: 5
+
+# ─── Service: user-service ────────────────────────────────
+userService:
+  enabled: true
+  name: user-service
+  image:
+    repository: apexfit/user-service
+    tag: ""
+  replicaCount: 2
+  port: 3001
+  env:
+    NODE_ENV: "production"
+    PORT: "3001"
+    DB_NAME: apexfit_users
+    SERVICE_NAME: user-service
+    JWT_ACCESS_EXPIRES_IN: "15m"
+    JWT_REFRESH_EXPIRES_IN: "30d"
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "250m"
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+  service:
+    type: ClusterIP
+  livenessProbe:
+    path: /health
+    initialDelaySeconds: 15
+    periodSeconds: 20
+    timeoutSeconds: 15
+    failureThreshold: 5
+  readinessProbe:
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 15
+    failureThreshold: 5
+
+# ─── Service: membership-service ─────────────────────────
+membershipService:
+  enabled: true
+  name: membership-service
+  image:
+    repository: apexfit/membership-service
+    tag: ""
+  replicaCount: 2
+  port: 3002
+  env:
+    NODE_ENV: "production"
+    PORT: "3002"
+    DB_NAME: apexfit_memberships
+    SERVICE_NAME: membership-service
+    JWT_ACCESS_EXPIRES_IN: "15m"
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "250m"
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+  service:
+    type: ClusterIP
+  livenessProbe:
+    path: /health
+    initialDelaySeconds: 15
+    periodSeconds: 20
+    timeoutSeconds: 15
+    failureThreshold: 5
+  readinessProbe:
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 15
+    failureThreshold: 5
+
+# ─── Service: admin-service ───────────────────────────────
+adminService:
+  enabled: true
+  name: admin-service
+  image:
+    repository: apexfit/admin-service
+    tag: ""
+  replicaCount: 1
+  port: 3003
+  env:
+    NODE_ENV: "production"
+    PORT: "3003"
+    DB_NAME: apexfit_admin
+    SERVICE_NAME: admin-service
+    JWT_ACCESS_EXPIRES_IN: "15m"
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "250m"
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+  service:
+    type: ClusterIP
+  livenessProbe:
+    path: /health
+    initialDelaySeconds: 15
+    periodSeconds: 20
+    timeoutSeconds: 15
+    failureThreshold: 5
+  readinessProbe:
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 15
+    failureThreshold: 5

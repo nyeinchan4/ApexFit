@@ -6,17 +6,17 @@ metadata:
   name: {{ .Release.Name }}-{{ $svc.name }}
   namespace: {{ .Values.namespace.name }}
   labels:
-    {{- include "apexfit.labels" . | nindent 4 }}
+    {{- include "apexfit-backend.labels" . | nindent 4 }}
     app.kubernetes.io/component: {{ $svc.name }}
 spec:
   replicas: {{ $svc.replicaCount }}
   selector:
     matchLabels:
-      {{- include "apexfit.selectorLabels" (dict "component" $svc.name "Release" .Release) | nindent 6 }}
+      {{- include "apexfit-backend.selectorLabels" (dict "component" $svc.name "Release" .Release) | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "apexfit.selectorLabels" (dict "component" $svc.name "Release" .Release) | nindent 8 }}
+        {{- include "apexfit-backend.selectorLabels" (dict "component" $svc.name "Release" .Release) | nindent 8 }}
         app.kubernetes.io/component: {{ $svc.name }}
     spec:
       {{- with .Values.global.imagePullSecrets }}
@@ -25,40 +25,43 @@ spec:
       {{- end }}
       containers:
         - name: {{ $svc.name }}
-          image: {{ include "apexfit.image" (dict "svc" $svc "Values" .Values) }}
+          image: {{ include "apexfit-backend.image" (dict "svc" $svc "Values" .Values) }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ $svc.port }}
               protocol: TCP
           env:
+            # ── Non-secret env vars ──────────────────────────
             {{- range $k, $v := $svc.env }}
             - name: {{ $k }}
               value: {{ $v | quote }}
             {{- end }}
+            # ── Database connection ──────────────────────────
             - name: DB_HOST
-              value: {{ include "apexfit.postgresHost" . | quote }}
+              value: {{ .Values.database.host | quote }}
             - name: DB_PORT
-              value: {{ include "apexfit.postgresPort" . | quote }}
+              value: {{ .Values.database.port | quote }}
+            # ── Secrets (from shared Secret) ─────────────────
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-secrets
+                  name: {{ .Values.sharedSecretName }}
                   key: DB_USER
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-secrets
+                  name: {{ .Values.sharedSecretName }}
                   key: DB_PASSWORD
             - name: JWT_ACCESS_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-secrets
+                  name: {{ .Values.sharedSecretName }}
                   key: JWT_ACCESS_SECRET
-            # ── Inter-service URLs ────────────────────────────
-            - name: USER_SERVICE_URL
-              value: http://{{ .Release.Name }}-{{ .Values.userService.name }}:{{ .Values.userService.port }}
-            - name: MEMBERSHIP_SERVICE_URL
-              value: http://{{ .Release.Name }}-{{ .Values.membershipService.name }}:{{ .Values.membershipService.port }}
+            - name: JWT_REFRESH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.sharedSecretName }}
+                  key: JWT_REFRESH_SECRET
           livenessProbe:
             httpGet:
               path: {{ $svc.livenessProbe.path }}
@@ -80,4 +83,25 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
+{{- end }}
+---
+{{- if .Values.adminService.enabled }}
+{{- $svc := .Values.adminService }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-{{ $svc.name }}
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "apexfit-backend.labels" . | nindent 4 }}
+    app.kubernetes.io/component: {{ $svc.name }}
+spec:
+  type: {{ $svc.service.type }}
+  selector:
+    {{- include "apexfit-backend.selectorLabels" (dict "component" $svc.name "Release" .Release) | nindent 4 }}
+  ports:
+    - port: {{ $svc.port }}
+      targetPort: {{ $svc.port }}
+      protocol: TCP
+      name: http
 {{- end }}

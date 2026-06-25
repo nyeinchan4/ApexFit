@@ -1,0 +1,18 @@
+apiVersion: v2
+name: apexfit-database
+description: |
+  ApexFit Database sub-chart.
+  Wraps Bitnami PostgreSQL and manages the shared credentials Secret.
+type: application
+version: 0.1.0
+appVersion: "16.x"
+keywords:
+  - apexfit
+  - postgresql
+  - database
+
+dependencies:
+  - name: postgresql
+    version: "16.x.x"
+    repository: oci://registry-1.docker.io/bitnamicharts
+    condition: postgresql.enabled

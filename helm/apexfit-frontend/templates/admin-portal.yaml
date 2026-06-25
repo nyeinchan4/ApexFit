@@ -1,22 +1,22 @@
-{{- if .Values.memberApp.enabled }}
-{{- $svc := .Values.memberApp }}
+{{- if .Values.adminPortal.enabled }}
+{{- $svc := .Values.adminPortal }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-{{ $svc.name }}
   namespace: {{ .Values.namespace.name }}
   labels:
-    {{- include "apexfit.labels" . | nindent 4 }}
+    {{- include "apexfit-frontend.labels" . | nindent 4 }}
     app.kubernetes.io/component: {{ $svc.name }}
 spec:
   replicas: {{ $svc.replicaCount }}
   selector:
     matchLabels:
-      {{- include "apexfit.selectorLabels" (dict "component" $svc.name "Release" .Release) | nindent 6 }}
+      {{- include "apexfit-frontend.selectorLabels" (dict "component" $svc.name "Release" .Release) | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "apexfit.selectorLabels" (dict "component" $svc.name "Release" .Release) | nindent 8 }}
+        {{- include "apexfit-frontend.selectorLabels" (dict "component" $svc.name "Release" .Release) | nindent 8 }}
         app.kubernetes.io/component: {{ $svc.name }}
     spec:
       {{- with .Values.global.imagePullSecrets }}
@@ -25,11 +25,20 @@ spec:
       {{- end }}
       containers:
         - name: {{ $svc.name }}
-          image: {{ include "apexfit.image" (dict "svc" $svc "Values" .Values) }}
+          image: {{ include "apexfit-frontend.image" (dict "svc" $svc "Values" .Values) }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ $svc.port }}
               protocol: TCP
+          {{- if $svc.env }}
+          env:
+            {{- range $k, $v := $svc.env }}
+            {{- if $v }}
+            - name: {{ $k }}
+              value: {{ $v | quote }}
+            {{- end }}
+            {{- end }}
+          {{- end }}
           livenessProbe:
             httpGet:
               path: {{ $svc.livenessProbe.path }}
@@ -46,20 +55,20 @@ spec:
             {{- toYaml $svc.resources | nindent 12 }}
 {{- end }}
 ---
-{{- if .Values.memberApp.enabled }}
-{{- $svc := .Values.memberApp }}
+{{- if .Values.adminPortal.enabled }}
+{{- $svc := .Values.adminPortal }}
 apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Release.Name }}-{{ $svc.name }}
   namespace: {{ .Values.namespace.name }}
   labels:
-    {{- include "apexfit.labels" . | nindent 4 }}
+    {{- include "apexfit-frontend.labels" . | nindent 4 }}
     app.kubernetes.io/component: {{ $svc.name }}
 spec:
   type: {{ $svc.service.type }}
   selector:
-    {{- include "apexfit.selectorLabels" (dict "component" $svc.name "Release" .Release) | nindent 4 }}
+    {{- include "apexfit-frontend.selectorLabels" (dict "component" $svc.name "Release" .Release) | nindent 4 }}
   ports:
     - port: {{ $svc.port }}
       targetPort: {{ $svc.port }}

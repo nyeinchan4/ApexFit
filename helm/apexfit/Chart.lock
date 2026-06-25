@@ -1,6 +1,12 @@
 dependencies:
-- name: postgresql
-  repository: oci://registry-1.docker.io/bitnamicharts
-  version: 16.7.27
-digest: sha256:e91754406fd7f90e16d5de9bca9562215ba7e04b96ceb0c82ad488a08e4f5856
-generated: "2026-06-22T22:52:44.083280961+06:30"
+- name: apexfit-database
+  repository: file://../apexfit-database
+  version: 0.1.0
+- name: apexfit-backend
+  repository: file://../apexfit-backend
+  version: 0.1.0
+- name: apexfit-frontend
+  repository: file://../apexfit-frontend
+  version: 0.1.0
+digest: sha256:1163e7772da5fd691d4987efc12f06db4a3f1b73494767df8fdb370f5bb7231f
+generated: "2026-06-25T23:16:25.45572356+06:30"
