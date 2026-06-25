@@ -166,6 +166,9 @@ adminService:
     DB_NAME: apexfit_admin
     SERVICE_NAME: admin-service
     JWT_ACCESS_EXPIRES_IN: "15m"
+    # ── Downstream service URLs (used by /health aggregate check) ─
+    USER_SERVICE_URL: "http://apexfit-backend-user-service:3001"
+    MEMBERSHIP_SERVICE_URL: "http://apexfit-backend-membership-service:3002"
   resources:
     requests:
       memory: "128Mi"
