@@ -1,0 +1,191 @@
+# ============================================================
+# apexfit-backend — values-dev.yaml
+# Development overrides for the backend sub-chart.
+# Usage (standalone):
+#   helm install apexfit-be ./helm/apexfit-backend \
+#     -f helm/apexfit-backend/values-dev.yaml
+#
+# NOTE: The database sub-chart must be installed first so the
+#       shared Secret already exists in the namespace.
+#       Default secret name: apexfit-db-secrets
+#       (= <database-release-name>-secrets)
+# ============================================================
+
+# ─── Namespace ────────────────────────────────────────────
+namespace:
+  name: apexfit
+
+# ─── Global image settings ────────────────────────────────
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+
+image:
+  pullPolicy: Always      # always pull latest in dev
+  tag: latest
+
+# ─── Shared Secret (created by apexfit-database release) ──
+# Format: <database-release-name>-secrets
+sharedSecretName: "apexfit-db-secrets"
+
+# ─── Database host (matches database release name) ─────────
+# Format: <database-release-name>-postgresql
+database:
+  host: "apexfit-db-postgresql"
+  port: "5432"
+
+# ─── Service: api-gateway ─────────────────────────────────
+apiGateway:
+  enabled: true
+  name: api-gateway
+  image:
+    repository: nyeinchan468/apexfit-api-gateway
+    tag: "latest"
+  replicaCount: 1          # 1 replica in dev
+  port: 3000
+  env:
+    NODE_ENV: "development"
+    PORT: "3000"
+    SERVICE_NAME: api-gateway
+    ALLOWED_ORIGINS: "http://localhost:8899,http://localhost:8900,http://localhost:3000"
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "250m"
+  autoscaling:
+    enabled: false
+  service:
+    type: ClusterIP
+  livenessProbe:
+    path: /health
+    initialDelaySeconds: 30
+    periodSeconds: 20
+    timeoutSeconds: 15
+    failureThreshold: 5
+  readinessProbe:
+    path: /health
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    timeoutSeconds: 15
+    failureThreshold: 5
+
+# ─── Service: user-service ────────────────────────────────
+userService:
+  enabled: true
+  name: user-service
+  image:
+    repository: nyeinchan468/apexfit-user-service
+    tag: "latest"
+  replicaCount: 1
+  port: 3001
+  env:
+    NODE_ENV: "development"
+    PORT: "3001"
+    DB_NAME: apexfit_users
+    SERVICE_NAME: user-service
+    JWT_ACCESS_EXPIRES_IN: "15m"
+    JWT_REFRESH_EXPIRES_IN: "30d"
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "250m"
+  autoscaling:
+    enabled: false
+  service:
+    type: ClusterIP
+  livenessProbe:
+    path: /health
+    initialDelaySeconds: 15
+    periodSeconds: 20
+    timeoutSeconds: 15
+    failureThreshold: 5
+  readinessProbe:
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 15
+    failureThreshold: 5
+
+# ─── Service: membership-service ─────────────────────────
+membershipService:
+  enabled: true
+  name: membership-service
+  image:
+    repository: nyeinchan468/apexfit-membership-service
+    tag: "latest"
+  replicaCount: 1
+  port: 3002
+  env:
+    NODE_ENV: "development"
+    PORT: "3002"
+    DB_NAME: apexfit_memberships
+    SERVICE_NAME: membership-service
+    JWT_ACCESS_EXPIRES_IN: "15m"
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "250m"
+  autoscaling:
+    enabled: false
+  service:
+    type: ClusterIP
+  livenessProbe:
+    path: /health
+    initialDelaySeconds: 30
+    periodSeconds: 20
+    timeoutSeconds: 15
+    failureThreshold: 5
+  readinessProbe:
+    path: /health
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    timeoutSeconds: 15
+    failureThreshold: 5
+
+# ─── Service: admin-service ───────────────────────────────
+adminService:
+  enabled: true
+  name: admin-service
+  image:
+    repository: nyeinchan468/apexfit-admin-service
+    tag: "latest"
+  replicaCount: 1
+  port: 3003
+  env:
+    NODE_ENV: "development"
+    PORT: "3003"
+    DB_NAME: apexfit_admin
+    SERVICE_NAME: admin-service
+    JWT_ACCESS_EXPIRES_IN: "15m"
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "250m"
+  autoscaling:
+    enabled: false
+  service:
+    type: ClusterIP
+  livenessProbe:
+    path: /health
+    initialDelaySeconds: 30
+    periodSeconds: 20
+    timeoutSeconds: 15
+    failureThreshold: 5
+  readinessProbe:
+    path: /health
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    timeoutSeconds: 15
+    failureThreshold: 5

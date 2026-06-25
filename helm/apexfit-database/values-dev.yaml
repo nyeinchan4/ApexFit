@@ -1,0 +1,58 @@
+# ============================================================
+# apexfit-database — values-dev.yaml
+# Development overrides for the database sub-chart.
+# Usage (standalone):
+#   helm install apexfit-db ./helm/apexfit-database \
+#     -f helm/apexfit-database/values-dev.yaml
+# ============================================================
+
+# ─── Namespace ────────────────────────────────────────────
+namespace:
+  name: apexfit
+
+# ─── Shared credentials (dev — NOT for production) ────────
+secrets:
+  jwtAccessSecret: "dev_access_secret_not_for_production"
+  jwtRefreshSecret: "dev_refresh_secret_not_for_production"
+
+# ─── PostgreSQL (Bitnami sub-chart) ───────────────────────
+postgresql:
+  enabled: true
+  image:
+    tag: latest          # Bitnami free-tier doesn't publish versioned tags
+
+  auth:
+    username: postgres
+    password: "changeme"
+    database: apexfit_users
+
+  primary:
+    initdb:
+      scripts:
+        init-db.sql: |
+          SELECT 'CREATE DATABASE apexfit_memberships'
+          WHERE NOT EXISTS (
+              SELECT FROM pg_database WHERE datname = 'apexfit_memberships'
+          )\gexec
+
+          SELECT 'CREATE DATABASE apexfit_admin'
+          WHERE NOT EXISTS (
+              SELECT FROM pg_database WHERE datname = 'apexfit_admin'
+          )\gexec
+
+    persistence:
+      enabled: true
+      size: 1Gi           # smaller PVC for dev
+
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "250m"
+
+# ─── External PostgreSQL (disabled in dev) ────────────────
+externalPostgresql:
+  host: ""
+  port: 5432
