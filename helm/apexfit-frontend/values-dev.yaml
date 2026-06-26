@@ -34,7 +34,7 @@ adminPortal:
   port: 80
   env:
     # Must match: <backend-release-name>-api-gateway
-    API_GATEWAY_HOST: "apexfit-be-api-gateway"
+    API_GATEWAY_HOST: "apexfit-backend-api-gateway"
   resources:
     requests:
       memory: "64Mi"
@@ -64,7 +64,7 @@ memberApp:
   port: 80
   env:
     # Must match: <backend-release-name>-api-gateway
-    API_GATEWAY_HOST: "apexfit-be-api-gateway"
+    API_GATEWAY_HOST: "apexfit-backend-api-gateway"
   resources:
     requests:
       memory: "64Mi"
