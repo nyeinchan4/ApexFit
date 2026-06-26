@@ -23,6 +23,13 @@ image:
   pullPolicy: Always      # always pull latest in dev
   tag: latest
 
+# ─── API Gateway alias ───────────────────────────────────
+# Nginx in the Docker image has "release-1-api-gateway" hardcoded as upstream.
+# This ExternalName Service creates that DNS alias in-cluster.
+apiGatewayAlias:
+  targetService: "apexfit-backend-api-gateway"   # real K8s Service name
+  port: 3000
+
 # ─── Frontend: admin-portal ───────────────────────────────
 adminPortal:
   enabled: true

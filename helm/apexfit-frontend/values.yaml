@@ -15,6 +15,14 @@ image:
   pullPolicy: IfNotPresent
   tag: latest
 
+# ─── API Gateway alias ───────────────────────────────────
+# The frontend Docker images have nginx configs with the upstream hostname
+# hardcoded at build time. This creates a DNS alias Service so nginx
+# can resolve it without rebuilding images.
+apiGatewayAlias:
+  targetService: "apexfit-backend-api-gateway"  # real K8s Service name
+  port: 3000
+
 # ─── Frontend: admin-portal ───────────────────────────────
 adminPortal:
   enabled: true
