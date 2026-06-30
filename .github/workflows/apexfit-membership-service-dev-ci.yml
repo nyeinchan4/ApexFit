@@ -2,10 +2,11 @@ name: Docker Build & Push — Membership Service
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths:
       - services/membership-service/**
-      - .github/workflows/docker-membership-service.yml
+      - .github/workflows/apexfit-membership-service-dev-ci.yml
+
   workflow_dispatch:
 
 jobs:

@@ -2,10 +2,10 @@ name: Docker Build & Push — Member App
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths:
       - frontend/member-app/**
-      - .github/workflows/docker-member-app.yml
+      - .github/workflows/apexfit-member-app-dev-ci.yml
   workflow_dispatch:
 
 jobs:

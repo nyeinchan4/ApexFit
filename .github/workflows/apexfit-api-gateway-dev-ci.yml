@@ -2,10 +2,10 @@ name: Docker Build & Push — API Gateway
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths:
       - services/api-gateway/**
-      - .github/workflows/docker-api-gateway.yml
+      - .github/workflows/apexfit-api-gateway-dev-ci.yml
   workflow_dispatch:
 
 jobs:

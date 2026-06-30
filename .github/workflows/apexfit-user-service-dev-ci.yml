@@ -2,10 +2,11 @@ name: Docker Build & Push — User Service
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths:
       - services/user-service/**
-      - .github/workflows/docker-user-service.yml
+      - .github/workflows/apexfit-user-service-dev-ci.yml
+
   workflow_dispatch:
 
 jobs:

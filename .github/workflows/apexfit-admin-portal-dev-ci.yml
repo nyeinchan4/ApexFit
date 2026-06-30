@@ -2,10 +2,10 @@ name: Docker Build & Push — Admin Portal
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths:
       - frontend/admin-portal/**
-      - .github/workflows/docker-admin-portal.yml
+      - .github/workflows/apexfit-admin-portal-dev-ci.yml
   workflow_dispatch:
 
 jobs:
