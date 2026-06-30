@@ -2,10 +2,10 @@ name: Docker Build & Push — Admin Service
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths:
       - services/admin-service/**
-      - .github/workflows/docker-admin-service.yml
+      - .github/workflows/apexfit-admin-service-dev-ci.yml
   workflow_dispatch:
 
 jobs:
