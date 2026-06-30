@@ -1,0 +1,33 @@
+# ── Local secrets (NEVER commit) ──────────────────────────────
+.secrets.env
+
+# ── Node modules ──────────────────────────────────────────────
+node_modules/
+**/node_modules/
+
+# ── Environment files ─────────────────────────────────────────
+# .env files per service are gitignored at their own level
+# Root-level env overrides
+*.env.local
+*.env.production
+
+# ── Build outputs ─────────────────────────────────────────────
+dist/
+build/
+.next/
+
+# ── Logs ──────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+
+# ── OS / Editor ───────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── Helm chart dependencies ────────────────────────────────────
+helm/**/charts/*.tgz
