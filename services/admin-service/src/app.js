@@ -20,16 +20,17 @@ app.set('trust proxy', 1);
 
 app.use(helmet());
 app.use(cors({ origin: process.env.ALLOWED_ORIGINS?.split(',') || '*', credentials: true }));
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 200, message: { success: false, error: 'Too many requests.' } }));
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('combined', { stream: { write: (m) => logger.info(m.trim()) } }));
 
+// Health route — registered BEFORE rate limiter so kube probes are never throttled
+app.use('/health',            healthRoutes);
+
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 200, message: { success: false, error: 'Too many requests.' } }));
+
 // Audit middleware — logs every mutating request made by staff/admin
 app.use(auditLogger);
-
-// Routes
-app.use('/health',            healthRoutes);
 app.use('/api/v1/dashboard',  dashboardRoutes);
 app.use('/api/v1/members',    memberRoutes);
 app.use('/api/v1/staff',      staffRoutes);

@@ -20,13 +20,6 @@ app.set('trust proxy', 1);
 app.use(helmet());
 app.use(cors({ origin: process.env.ALLOWED_ORIGINS?.split(',') || '*', credentials: true }));
 
-// ── Rate limiting ─────────────────────────────────────────────────────────────
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: { success: false, error: 'Too many requests.' },
-}));
-
 // ── Parsing ───────────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -34,8 +27,17 @@ app.use(express.urlencoded({ extended: true }));
 // ── Logging ───────────────────────────────────────────────────────────────────
 app.use(morgan('combined', { stream: { write: (m) => logger.info(m.trim()) } }));
 
-// ── Routes ────────────────────────────────────────────────────────────────────
+// ── Health route — BEFORE rate limiter so kube probes are never throttled ─────
 app.use('/health',              healthRoutes);
+
+// ── Rate limiting ─────────────────────────────────────────────────────────────
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { success: false, error: 'Too many requests.' },
+}));
+
+// ── Routes ────────────────────────────────────────────────────────────────────
 app.use('/api/v1/plans',        planRoutes);
 app.use('/api/v1/subscriptions',subscriptionRoutes);
 app.use('/api/v1/payments',     paymentRoutes);
