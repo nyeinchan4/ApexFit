@@ -57,7 +57,29 @@ kubectl patch secret apexfit-database-postgresql \
   --type=json \
   -p="[{\"op\":\"replace\",\"path\":\"/data/postgres-password\",\"value\":\"$(echo -n "$DB_PASSWORD" | base64 -w0)\"}]"
 
-log "✅ Secrets applied. Rolling restart of backend pods..."
+# ── CRITICAL: also update the password INSIDE PostgreSQL ──────
+# The Bitnami chart stores the password in the PVC — patching the k8s Secret
+# alone does NOT change the actual Postgres user password. We must run ALTER USER.
+PG_POD=$(kubectl get pod -n "$NAMESPACE" --no-headers 2>/dev/null | awk '/apexfit-database-postgresql/{print $1}' | head -1)
+if [[ -n "$PG_POD" ]]; then
+  # Detect the current working password (old value from the secret before our patch)
+  OLD_PASSWORD=$(kubectl get secret apexfit-database-postgresql -n "$NAMESPACE" \
+    -o jsonpath='{.data.postgres-password}' 2>/dev/null | base64 -d || echo "")
+
+  log "Updating postgres user password inside pod '$PG_POD'..."
+  # Try both old and new passwords in case script is re-run
+  kubectl exec -n "$NAMESPACE" "$PG_POD" -- \
+    env PGPASSWORD="$OLD_PASSWORD" psql -U postgres -c \
+    "ALTER USER postgres PASSWORD '$DB_PASSWORD';" 2>/dev/null || \
+  kubectl exec -n "$NAMESPACE" "$PG_POD" -- \
+    env PGPASSWORD="$DB_PASSWORD" psql -U postgres -c \
+    "ALTER USER postgres PASSWORD '$DB_PASSWORD';" 2>/dev/null || \
+  warn "Could not ALTER USER — DB may already use new password or pod is unavailable."
+else
+  warn "PostgreSQL pod not found — skipping ALTER USER. Run manually after DB pod starts."
+fi
+
+log "Rolling restart of backend pods..."
 
 kubectl rollout restart deployment \
   apexfit-backend-user-service \
