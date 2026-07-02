@@ -4,22 +4,28 @@
 # Usage (standalone):
 #   helm install apexfit-db ./helm/apexfit-database \
 #     -f helm/apexfit-database/values-dev.yaml
+#
+# ⚠️  DEV ONLY — postgres password is stored here in plain text.
+#     Production uses AWS RDS — no postgres sub-chart needed.
+#     JWT secrets are managed via SealedSecret (sealed-secret.yaml).
 # ============================================================
 
 # ─── Namespace ────────────────────────────────────────────
 namespace:
   name: apexfit
 
-# ─── Shared credentials ───────────────────────────────────
-# ✅ SEALED SECRETS: apexfit-database-secrets is now managed as a SealedSecret
-# in helm/apexfit-database/templates/sealed-secret.yaml (safe to commit to git).
-# To rotate secrets: update .secrets.env then run scripts/rotate-sealed-secret.sh
-# Values below are unused but kept so Helm chart schema validation passes.
+# ─── Shared JWT credentials ───────────────────────────────
+# ✅ SEALED SECRETS: apexfit-database-secrets (DB creds + JWTs) is managed
+# as a SealedSecret in helm/apexfit-database/templates/sealed-secret.yaml.
+# To rotate: update .secrets.env → run scripts/rotate-sealed-secret.sh → git push
+# Values below are unused but kept so Helm schema validation passes.
 secrets:
   jwtAccessSecret: "UNUSED_MANAGED_BY_SEALED_SECRETS"
   jwtRefreshSecret: "UNUSED_MANAGED_BY_SEALED_SECRETS"
 
 # ─── PostgreSQL (Bitnami sub-chart) ───────────────────────
+# ⚠️  DEV ONLY: password stored here so ArgoCD always syncs the correct
+# value without manual patching. Production → AWS RDS (this block unused).
 postgresql:
   enabled: true
   image:
@@ -27,7 +33,7 @@ postgresql:
 
   auth:
     username: postgres
-    password: "UNUSED_MANAGED_BY_SEALED_SECRETS"  # real value managed via SealedSecret
+    password: "DT3j3ZwhdLvBrqK7RpqzYGtpu_qFJZfk0cDNk3tX0d8"  # dev only
     database: apexfit_users
 
   primary:
