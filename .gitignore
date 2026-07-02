@@ -1,5 +1,7 @@
 # ── Local secrets (NEVER commit) ──────────────────────────────
 .secrets.env
+# Sealed Secrets master key backup — store securely offline, NOT in git
+sealed-secrets-master-key-BACKUP.yaml
 
 # ── Node modules ──────────────────────────────────────────────
 node_modules/

@@ -11,13 +11,13 @@ namespace:
   name: apexfit
 
 # ─── Shared credentials ───────────────────────────────────
-# ⚠️  SECURITY: Do NOT put real secrets here — this file is committed to git.
-# Real secrets are managed directly as a Kubernetes Secret via kubectl.
-# See: scripts/apply-secrets.sh  or  .secrets.env (gitignored, local only)
-# To bootstrap: kubectl apply -f - <<< $(cat scripts/k8s-secrets-template.yaml)
+# ✅ SEALED SECRETS: apexfit-database-secrets is now managed as a SealedSecret
+# in helm/apexfit-database/templates/sealed-secret.yaml (safe to commit to git).
+# To rotate secrets: update .secrets.env then run scripts/rotate-sealed-secret.sh
+# Values below are unused but kept so Helm chart schema validation passes.
 secrets:
-  jwtAccessSecret: "CHANGEME_OVERRIDE_VIA_KUBECTL"
-  jwtRefreshSecret: "CHANGEME_OVERRIDE_VIA_KUBECTL"
+  jwtAccessSecret: "UNUSED_MANAGED_BY_SEALED_SECRETS"
+  jwtRefreshSecret: "UNUSED_MANAGED_BY_SEALED_SECRETS"
 
 # ─── PostgreSQL (Bitnami sub-chart) ───────────────────────
 postgresql:
@@ -27,7 +27,7 @@ postgresql:
 
   auth:
     username: postgres
-    password: "CHANGEME_OVERRIDE_VIA_KUBECTL"  # real value managed via kubectl secret
+    password: "UNUSED_MANAGED_BY_SEALED_SECRETS"  # real value managed via SealedSecret
     database: apexfit_users
 
   primary:
